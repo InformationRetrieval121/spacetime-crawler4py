@@ -26,6 +26,8 @@ def is_valid(url):
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
+
+        # Checking to see if organization works - Kian (delete later)
         # need to validate that they are also one of these 5 domains
         # .ics.uci.edu/*
         # .cs.uci.edu/*
