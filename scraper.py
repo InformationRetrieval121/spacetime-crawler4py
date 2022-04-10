@@ -21,10 +21,18 @@ def is_valid(url):
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
+    # In the write up it says we will have to add/change this function
     try:
         parsed = urlparse(url)
         if parsed.scheme not in set(["http", "https"]):
             return False
+        # need to validate that they are also one of these 5 domains
+        # .ics.uci.edu/*
+        # .cs.uci.edu/*
+        # .informatics.uci.edu/*
+        # .stat.uci.edu/*
+        # today.uci.edu/department/information_computer_sciences/*
+        
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
