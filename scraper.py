@@ -2,9 +2,9 @@ import re
 from urllib.parse import urlparse, urldefrag
 # also imported urldefrag to "defragment" each URL
 
-def scraper(url, resp): # I think we have to also change this but confused as to where scraper is being called
+def scraper(url, resp):
     links = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)]
+    return [urldefrag(link)[0] for link in links if is_valid(link)]
 
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
@@ -29,8 +29,6 @@ def extract_next_links(url, resp):
 def is_valid(url):
     '''Return bool on whether the url meets
     all conditions.'''
-    # I didn't see a good reason to de fragment the URL in this function
-    
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
