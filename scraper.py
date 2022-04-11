@@ -1,11 +1,13 @@
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urldefrag
+# also imported urldefrag to "defragment" each URL
 
-def scraper(url, resp):
+def scraper(url, resp): # I think we have to also change this but confused as to where scraper is being called
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
 def extract_next_links(url, resp):
+    ''' Everything in this paragraph is what was given in the template...
     # Implementation required.
     # url: the URL that was used to get the page
     # resp.url: the actual url of the page
@@ -15,25 +17,42 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    return list()
+    '''
+    if resp.status != 200:
+        # error so don't do anything
+        return list()
+    else:
+        # do something meaningful
+        return list()
+    
 
 def is_valid(url):
+    '''Return bool on whether the url meets
+    all conditions.'''
+    # I didn't see a good reason to de fragment the URL in this function
+    
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
-    # In the write up it says we will have to add/change this function
     try:
         parsed = urlparse(url)
+        # parsed has attributes: scheme, netloc, path, params, query, fragment
+        # parsed_defrag = urlparse(urldefrag(url)[0]) # gets rid of frag but may be unecessary
         if parsed.scheme not in set(["http", "https"]):
             return False
-
-        # Checking to see if organization works - Kian (delete later)
-        # need to validate that they are also one of these 5 domains
-        # .ics.uci.edu/*
-        # .cs.uci.edu/*
-        # .informatics.uci.edu/*
-        # .stat.uci.edu/*
-        # today.uci.edu/department/information_computer_sciences/*
+        check_netloc_pattern = r'^(www\.)?(.*\.)?(ics\.uci\.edu|cs\.uci\.edu|informatics\.uci\.edu|stat\.uci\.edu)$'
+        fifth_link_pattern_domain = r'^(www\.)?today.uci.edu$'
+        fifth_link_pattern_path = r'^/department/information_computer_sciences/.*$'
+        # doesn't include the fifth domain
+        if re.match(check_netloc_pattern, parsed.netloc) == None:  # first check if no matches with first four websites
+            if re.match(fifth_link_pattern_domain, parsed.netloc) != None:
+                # then the fifth link matched but we need to check if it has the correct beginning paths
+                if re.match(fifth_link_pattern_path, parsed.path) == None:
+                    return False
+            else:
+                return False
+        # lines 44 through 50 check if it is a valid domain (and path if it is the fifth link)
+        # at this point it should return true and it just has to do the final check on line 54
         
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -48,3 +67,4 @@ def is_valid(url):
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+
