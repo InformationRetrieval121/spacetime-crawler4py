@@ -22,7 +22,8 @@ def extract_next_links(url, resp):
         # error so don't do anything
         return list()
     else:
-        # do something meaningful
+        print(resp.raw_response.url)
+        pritn(resp.raw_response.content)
         return list()
     
 
