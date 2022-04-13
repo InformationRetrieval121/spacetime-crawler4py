@@ -18,13 +18,36 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     '''
+
     if resp.status != 200:
         # error so don't do anything
         return list()
     else:
+        # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
+        soup = BeautifulSoup(resp.raw_response.content, 'lxml')
+        found_links_content = soup.find_all('a', href=True)
+
+        hyperlinks = set()
+
+        '''
+        Side note: this theoretically works? I've tested it with outside this function
+        and it works fine.
+        '''
+        # Goes through the href's found and formats them in full url form to be put
+        # in a set(which later is turned into a list)
+        # Makes the assumption that implicit href's uses "https://"
+        for content in found_links_content:
+            href = content['href']
+            if(len(href) > 1 and href[:2] == "//"):
+                links.add("https:" + href)
+            elif(href[0] == '/'):
+                links.add("https://" + domain +"/" + href[1:])
+            elif(href != "javascript:void(0)"):
+                links.add(href)
+
         print(resp.raw_response.url)
-        pritn(resp.raw_response.content)
-        return list()
+        print(resp.raw_response.content)
+        return list(hyperlinks)
     
 
 def is_valid(url):
