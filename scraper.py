@@ -1,11 +1,21 @@
 import re
 from urllib.parse import urlparse, urldefrag
+import lxml
+from bs4 import BeautifulSoup
 # also imported urldefrag to "defragment" each URL
+# for us to run it in terminal, must pip install
+# 1) lxml
+# 2) spacetime (look at ed discussion if having difficulty)
 
 def scraper(url, resp):
-    links = extract_next_links(url, resp)
-    return [urldefrag(link)[0] for link in links if is_valid(link)]
-
+    # at this point the url passed is guaranteed to be valid (syntactically) so check it for legality
+    print(url)
+    if True: # Legal.isCrawlable(url)
+        # this line will be for indexing the actual words (e.g. index(url))
+        links = extract_next_links(url, resp)
+        return [urldefrag(link)[0] for link in links if is_valid(link)]
+    else:
+        return []
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
     # Implementation required.
@@ -26,8 +36,8 @@ def extract_next_links(url, resp):
         # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
         soup = BeautifulSoup(resp.raw_response.content, 'lxml')
         found_links_content = soup.find_all('a', href=True)
-
         hyperlinks = set()
+        domain = urlparse(url).netloc
 
         '''
         Side note: this theoretically works? I've tested it with outside this function
@@ -36,18 +46,24 @@ def extract_next_links(url, resp):
         # Goes through the href's found and formats them in full url form to be put
         # in a set(which later is turned into a list)
         # Makes the assumption that implicit href's uses "https://"
-        for content in found_links_content:
-            href = content['href']
-            if(len(href) > 1 and href[:2] == "//"):
-                links.add("https:" + href)
-            elif(href[0] == '/'):
-                links.add("https://" + domain +"/" + href[1:])
-            elif(href != "javascript:void(0)"):
-                links.add(href)
 
         print(resp.raw_response.url)
-        print(resp.raw_response.content)
-        return list(hyperlinks)
+        for content in found_links_content:
+            href = content['href']
+            if len(href) != 0 and href[0] != "#":                    
+                if(len(href) > 1 and href[:2] == "//"):
+                    hyperlinks.add("https:" + href)
+                elif(href[0] == '/'):
+                    hyperlinks.add("https://" + domain + href)
+                elif(href != "javascript:void(0)"):
+                    hyperlinks.add(href)
+
+
+        print("HYPERLINKS ACQUIRED:", hyperlinks)
+        # print(resp.raw_response.content)
+        # return list(hyperlinks)
+        return list() # returning this until we finish legal.py to make sure we don't crawl
+                        # unallowed websites
     
 
 def is_valid(url):
@@ -87,6 +103,5 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
     except TypeError:
-        print ("TypeError for ", parsed)
-        raise
+        pass
 
