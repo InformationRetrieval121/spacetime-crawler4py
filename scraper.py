@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse, urldefrag
 import lxml
 from bs4 import BeautifulSoup
+import legal
 # also imported urldefrag to "defragment" each URL
 # for us to run it in terminal, must pip install
 # 1) lxml
@@ -9,8 +10,9 @@ from bs4 import BeautifulSoup
 
 def scraper(url, resp):
     # at this point the url passed is guaranteed to be valid (syntactically) so check it for legality
-    print(url)
-    if True: # Legal.isCrawlable(url)
+    # print(url)
+    if legal.checkLegality(url): # Legal.isCrawlable(url)
+        print("ENTERED")
         # this line will be for indexing the actual words (e.g. index(url))
         links = extract_next_links(url, resp)
         return [urldefrag(link)[0] for link in links if is_valid(link)]
@@ -47,7 +49,7 @@ def extract_next_links(url, resp):
         # in a set(which later is turned into a list)
         # Makes the assumption that implicit href's uses "https://"
 
-        print(resp.raw_response.url)
+        # print(resp.raw_response.url)
         for content in found_links_content:
             href = content['href']
             if len(href) != 0 and href[0] != "#":                    
