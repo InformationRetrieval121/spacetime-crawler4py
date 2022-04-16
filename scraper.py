@@ -9,15 +9,10 @@ import legal
 # 2) spacetime (look at ed discussion if having difficulty)
 
 def scraper(url, resp):
-    # at this point the url passed is guaranteed to be valid (syntactically) so check it for legality
-    # print(url)
-    if legal.checkLegality(url): # Legal.isCrawlable(url)
-        print("ENTERED")
         # this line will be for indexing the actual words (e.g. index(url))
-        links = extract_next_links(url, resp)
-        return [urldefrag(link)[0] for link in links if is_valid(link)]
-    else:
-        return []
+    links = extract_next_links(url, resp)
+    return [urldefrag(link)[0] for link in links if is_valid(link)]
+
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
     # Implementation required.
@@ -31,47 +26,38 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     '''
 
-    if resp.status != 200:
-        # error so don't do anything
-        return list()
-    else:
-        # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
-        soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-        found_links_content = soup.find_all('a', href=True)
-        hyperlinks = set()
-        domain = urlparse(url).netloc
+    # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
+    soup = BeautifulSoup(resp.raw_response.content, 'lxml')
+    found_links_content = soup.find_all('a', href=True)
+    hyperlinks = set()
+    domain = urlparse(url).netloc
+    '''
+    Side note: this theoretically works? I've tested it with outside this function
+    and it works fine.
+    '''
+    # Goes through the href's found and formats them in full url form to be put
+    # in a set(which later is turned into a list)
+    # Makes the assumption that implicit href's uses "https://"
+    # print(resp.raw_response.url)
+    for content in found_links_content:
+        href = content['href']
+        if len(href) != 0 and href[0] != "#":                    
+            if(len(href) > 1 and href[:2] == "//"):
+                hyperlinks.add("https:" + href)
+            elif(href[0] == '/'):
+                hyperlinks.add("https://" + domain + href)
+            elif(href != "javascript:void(0)"):
+                hyperlinks.add(href)
 
-        '''
-        Side note: this theoretically works? I've tested it with outside this function
-        and it works fine.
-        '''
-        # Goes through the href's found and formats them in full url form to be put
-        # in a set(which later is turned into a list)
-        # Makes the assumption that implicit href's uses "https://"
+    return list(hyperlinks)
+    #return list() # returning this until we finish legal.py to make sure we don't crawl
+                    # unallowed websites
 
-        # print(resp.raw_response.url)
-        for content in found_links_content:
-            href = content['href']
-            if len(href) != 0 and href[0] != "#":                    
-                if(len(href) > 1 and href[:2] == "//"):
-                    hyperlinks.add("https:" + href)
-                elif(href[0] == '/'):
-                    hyperlinks.add("https://" + domain + href)
-                elif(href != "javascript:void(0)"):
-                    hyperlinks.add(href)
-
-
-        print("HYPERLINKS ACQUIRED:", hyperlinks)
-        # print(resp.raw_response.content)
-        # return list(hyperlinks)
-        return list() # returning this until we finish legal.py to make sure we don't crawl
-                        # unallowed websites
-    
 
 def is_valid(url):
     '''Return bool on whether the url meets
     all conditions.'''
-    # Decide whether to crawl this url or not. 
+    # Decide whether to crawl this url or not. (before checking robots.txt)
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
     try:
