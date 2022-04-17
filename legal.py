@@ -48,7 +48,7 @@ def checkLegality(given_url, given_config):
         if isLegal:     # was not found to be disallowed so return true here, if not, continue the code
             return True
         for allowedPath in allowedPaths:
-            if allowedPath == given_url[:len(allowedPath)] and len(allowedPath) > len(longest_disallowedPath_found):     # make sure it is BIGGER than the biggest disallowed path found
+            if allowedPath == given_url[:len(allowedPath)] and len(allowedPath) > lenOfLongestDP:# make sure it is BIGGER than the biggest disallowed path found
                 return True # will return True since it found it was allowed
         return False  # will only execute if wasn't found in allowed (will be False)
             
