@@ -43,11 +43,14 @@ def extract_next_links(url, resp):
         href = content['href']
         if len(href) != 0 and href[0] != "#":                    
             if(len(href) > 1 and href[:2] == "//"):
-                hyperlinks.add("https:" + href)
+                if is_valid("https:" + href):
+                    hyperlinks.add("https:" + href)
             elif(href[0] == '/'):
-                hyperlinks.add("https://" + domain + href)
+                if is_valid("https://" + domain + href):
+                    hyperlinks.add("https://" + domain + href)
             elif(href != "javascript:void(0)"):
-                hyperlinks.add(href)
+                if is_valid(href):
+                    hyperlinks.add(href)
 
     return list(hyperlinks)
     #return list() # returning this until we finish legal.py to make sure we don't crawl
@@ -70,6 +73,16 @@ def is_valid(url):
         fifth_link_pattern_domain = r'^(www\.)?today.uci.edu$'
         fifth_link_pattern_path = r'^/department/information_computer_sciences/.*$'
         # doesn't include the fifth domain
+
+        #quick check to make sure doesnt access a file
+        try:
+            if parsed.path[1] == "~":
+                return False
+            if parsed.path[1:4] == "files":
+                return False
+        except:
+            pass
+        
         if re.match(check_netloc_pattern, parsed.netloc) == None:  # first check if no matches with first four websites
             if re.match(fifth_link_pattern_domain, parsed.netloc) != None:
                 # then the fifth link matched but we need to check if it has the correct beginning paths
