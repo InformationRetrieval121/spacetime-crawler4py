@@ -31,17 +31,19 @@ def extract_next_links(url, resp):
     found_links_content = soup.find_all('a', href=True)
     hyperlinks = set()
     domain = urlparse(url).netloc
-    '''
-    Side note: this theoretically works? I've tested it with outside this function
-    and it works fine.
-    '''
+    
+    # Skipping pages that are just .txt formats of a similar page
+    # Skipping pages that specify ical 'calendar'
+    # Skipping link share pages
+    cannot_contain_keywords = ["format=txt", "?ical", "?share"]
+
     # Goes through the href's found and formats them in full url form to be put
     # in a set(which later is turned into a list)
     # Makes the assumption that implicit href's uses "https://"
     # print(resp.raw_response.url)
     for content in found_links_content:
         href = content['href']
-        if len(href) != 0 and href[0] != "#":                    
+        if len(href) != 0 and href[0] != "#" and any(keyword in href for keyword in cannot_contain_keywords):                    
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add("https:" + href)
