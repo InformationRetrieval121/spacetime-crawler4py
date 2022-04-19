@@ -3,13 +3,19 @@ from urllib.parse import urlparse, urldefrag
 import lxml
 from bs4 import BeautifulSoup
 import legal
+import textContent
+
 # also imported urldefrag to "defragment" each URL
 # for us to run it in terminal, must pip install
 # 1) lxml
 # 2) spacetime (look at ed discussion if having difficulty)
+# 3) nltk (as of now unless we use a different tokenizer)
 
 def scraper(url, resp):
-        # this line will be for indexing the actual words (e.g. index(url))
+    # line below will be for indexing the actual words (e.g. index(url))
+    # dictionaryForWebSite = textContent.countTokens(resp)
+    # line above is commented out for now but should we store each dictionary to
+    # its corresponding link? What do you guys think?
     links = extract_next_links(url, resp)
     return [urldefrag(link)[0] for link in links if is_valid(link)]
 
@@ -43,7 +49,7 @@ def extract_next_links(url, resp):
     # print(resp.raw_response.url)
     for content in found_links_content:
         href = content['href']
-        if len(href) != 0 and href[0] != "#" and any(keyword in href for keyword in cannot_contain_keywords):                    
+        if len(href) != 0 and href[0] != "#": # and any(keyword in href for keyword in cannot_contain_keywords):   # this is making us not add any hyper links found (including ones that aren't duplicates)
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add("https:" + href)
@@ -55,8 +61,7 @@ def extract_next_links(url, resp):
                     hyperlinks.add(href)
 
     return list(hyperlinks)
-    #return list() # returning this until we finish legal.py to make sure we don't crawl
-                    # unallowed websites
+
 
 
 def is_valid(url):
@@ -68,7 +73,6 @@ def is_valid(url):
     try:
         parsed = urlparse(url)
         # parsed has attributes: scheme, netloc, path, params, query, fragment
-        # parsed_defrag = urlparse(urldefrag(url)[0]) # gets rid of frag but may be unecessary
         if parsed.scheme not in set(["http", "https"]):
             return False
         check_netloc_pattern = r'^(www\.)?(.*\.)?(ics\.uci\.edu|cs\.uci\.edu|informatics\.uci\.edu|stat\.uci\.edu)$'
