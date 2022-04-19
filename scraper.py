@@ -41,7 +41,7 @@ def extract_next_links(url, resp):
     # Skipping pages that are just .txt formats of a similar page
     # Skipping pages that specify ical 'calendar'
     # Skipping link share pages
-    cannot_contain_keywords = ["format=txt", "?ical", "?share"]
+    cannot_contain_keywords = ["format=txt", "?"]
 
     # Goes through the href's found and formats them in full url form to be put
     # in a set(which later is turned into a list)
@@ -49,7 +49,7 @@ def extract_next_links(url, resp):
     # print(resp.raw_response.url)
     for content in found_links_content:
         href = content['href']
-        if len(href) != 0 and href[0] != "#": # and any(keyword in href for keyword in cannot_contain_keywords):   # this is making us not add any hyper links found (including ones that aren't duplicates)
+        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords): 
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add("https:" + href)
