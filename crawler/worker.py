@@ -22,12 +22,12 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            resp = download(tbd_url, self.config, self.logger)
-            self.logger.info(
+            if legal.checkLegality(tbd_url, self.config):   # if legal,
+                resp = download(tbd_url, self.config, self.logger)  # then download the web site
+                self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
-            if resp.status == 200:
-                if legal.checkLegality(resp.raw_response.url, self.config):
+                if resp.status == 200:  # if not status 200, we can't access any reasonable information for the web site
                     scraped_urls = scraper.scraper(tbd_url, resp)
                     for scraped_url in scraped_urls:
                         self.frontier.add_url(scraped_url)
