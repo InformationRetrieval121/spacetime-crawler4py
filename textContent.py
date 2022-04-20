@@ -45,3 +45,19 @@ def binarySearch(word, small_index, big_index):
         else:
             return binarySearch(word, mid_index+1, big_index)
 
+"""
+#attempting to implement approach described in page# 61 of our textbook (lecture 11 slides)
+#to eliminate near duplicates
+
+#zip(src_words,src_words[1:],src_words[2:]) #optimally extract different N ngrams simultaneously, when N=3 
+#so this? -> zip(tokenizedList,tokenizedList[1:],tokenizedList[2:]) 
+def fingerprint(hyperlinks)
+    urlTriGrams = defaultdict(list) #consisting of {hyperlink, 3-gram of tokenized values of hyperlinks' content}
+    for hyperlink in hyperlinks:
+        urlTriGrams[hyperlink] = generate_n_grams(tokenizedList, 3) #storing 3-gram for each hyperlink
+        for element in urlTriGrams[hyperlink]:
+            element = hashlib.sha1(element) #make each element a hash value (hash with checksum instead)
+
+"""
+
+
