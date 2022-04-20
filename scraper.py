@@ -11,6 +11,8 @@ import textContent
 # 2) spacetime (look at ed discussion if having difficulty)
 # 3) nltk (as of now unless we use a different tokenizer)
 
+# previousPageTokens = set()        # Backup
+
 def scraper(url, resp):
     # line below will be for indexing the actual words (e.g. index(url))
     # dictionaryForWebSite = textContent.countTokens(resp)
@@ -39,9 +41,10 @@ def extract_next_links(url, resp):
     domain = urlparse(url).netloc
     
     # Skipping pages that are just .txt formats of a similar page
-    # Skipping pages that specify ical 'calendar'
-    # Skipping link share pages
+    # Skipping pages with query strings
     cannot_contain_keywords = ["format=txt", "?"]
+
+    # global previousPageTokens         # Backup
 
     # Goes through the href's found and formats them in full url form to be put
     # in a set(which later is turned into a list)
@@ -50,6 +53,16 @@ def extract_next_links(url, resp):
     for content in found_links_content:
         href = content['href']
         if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords): 
+            
+
+            # Horribly inefficient method of checking for similarity
+            # currentPageTokens = set(textContent.countTokens(resp).keys())
+            '''
+            if previousPageToken:
+                similarity = len(previousPageToken.intersection(currentPageTokens)) / len(previousPageTokens.union(currentPageTokens))
+                if(similarity > 0.9): continue      #  <-- Can change similarity threshold based on group decision
+            '''
+
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add("https:" + href)
@@ -59,6 +72,8 @@ def extract_next_links(url, resp):
             elif(href != "javascript:void(0)"):
                 if is_valid(href):
                     hyperlinks.add(href)
+            
+            # previousPageTokens = currentPageTokens        # Backup
 
     return list(hyperlinks)
 
