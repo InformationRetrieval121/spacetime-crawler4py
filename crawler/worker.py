@@ -6,6 +6,7 @@ from utils import get_logger
 import scraper
 import time
 import legal
+import textContent
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -20,6 +21,9 @@ class Worker(Thread):
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
+                self.logger.info(f"Longest page in terms of # of words: {textContent.mostWordsURL}")    # this should work
+                FiftyMostCommon = textContent.findTop50()
+                self.logger.info(f"50 most common words: {FiftyMostCommon}")
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
             if legal.checkLegality(tbd_url, self.config):   # if legal,

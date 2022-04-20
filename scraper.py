@@ -91,7 +91,7 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
         check_netloc_pattern = r'^(www\.)?(.*\.)?(ics\.uci\.edu|cs\.uci\.edu|informatics\.uci\.edu|stat\.uci\.edu)$'
-        fifth_link_pattern_domain = r'^(www\.)?today.uci.edu$'
+        fifth_link_pattern_domain = r'^(www\.)?today.uci.edu$'  # using r strings for pattern recognition when determining if the url is valid or not.
         fifth_link_pattern_path = r'^/department/information_computer_sciences/.*$'
         # doesn't include the fifth domain
 
