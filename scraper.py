@@ -52,7 +52,7 @@ def extract_next_links(url, resp):
     
     # Skipping pages that are just .txt formats of a similar page
     # Skipping pages with query strings
-    cannot_contain_keywords = ["format=txt", "?"]
+    cannot_contain_keywords = ["format=txt"]
 
     # global previousPageTokens         # Backup
 
