@@ -18,6 +18,12 @@ IcsUciEduDomains = defaultdict(int)
 def scraper(url, resp):
     # line below will be for indexing the actual words (e.g. index(url))
     dictionaryForWebSite = textContent.countTokens(resp)    # STILL NEED TO WRITE TO A FILE ALL DICTIONARIES
+    if len(dictionaryForWebSite) != 0:
+        with open('URLtokens.txt', 'w') as index_file:
+            index_file.write(url)
+            index_file.write("\n")
+            index_file.write(json.dumps(dictionaryForWebSite))
+            index_file.write("\n")
     # line above is commented out for now but should we store each dictionary to
     # its corresponding link? What do you guys think?
     check_IcsUciEdu(url)
