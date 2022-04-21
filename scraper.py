@@ -18,9 +18,6 @@ IcsUciEduDomains = defaultdict(int)
 def scraper(url, resp):
     # line below will be for indexing the actual words (e.g. index(url))
     dictionaryForWebSite = textContent.countTokens(resp)    # STILL NEED TO WRITE TO A FILE ALL DICTIONARIES
-                                                            # 
-    
-        
     # line above is commented out for now but should we store each dictionary to
     # its corresponding link? What do you guys think?
     check_IcsUciEdu(url)
@@ -31,7 +28,8 @@ def check_IcsUciEdu(url):
     parsed = urlparse(url)
     global IcsUciEduDomains
     if re.match(check_ics_uci_edu_domain, parsed.netloc) != None:
-        IcsUciEduDomains[parsed.scheme + "://" + parsed.netloc] += 1
+        if parsed.netloc != "www.ics.uci.edu" and parsed.netloc != "ics.uci.edu":
+            IcsUciEduDomains[parsed.scheme + "://" + parsed.netloc] += 1
 
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
