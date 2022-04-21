@@ -4,7 +4,7 @@ import lxml
 from bs4 import BeautifulSoup
 import legal
 import textContent
-
+from collections import defaultdict
 # also imported urldefrag to "defragment" each URL
 # for us to run it in terminal, must pip install
 # 1) lxml
@@ -12,14 +12,26 @@ import textContent
 # 3) nltk (as of now unless we use a different tokenizer)
 
 # previousPageTokens = set()        # Backup
+IcsUciEduDomains = defaultdict(int)
+
 
 def scraper(url, resp):
     # line below will be for indexing the actual words (e.g. index(url))
-    # dictionaryForWebSite = textContent.countTokens(resp)
+    dictionaryForWebSite = textContent.countTokens(resp)    # STILL NEED TO WRITE TO A FILE ALL DICTIONARIES
+                                                            # 
+    
+        
     # line above is commented out for now but should we store each dictionary to
     # its corresponding link? What do you guys think?
-    links = extract_next_links(url, resp)
-    return [urldefrag(link)[0] for link in links if is_valid(link)]
+    check_IcsUciEdu(url)
+    return extract_next_links(url, resp)
+
+def check_IcsUciEdu(url):
+    check_ics_uci_edu_domain = r'^(www\.)?(.*\.)(ics\.uci\.edu)$' # for problem# 4 
+    parsed = urlparse(url)
+    global IcsUciEduDomains
+    if re.match(check_ics_uci_edu_domain, parsed.netloc) != None:
+        IcsUciEduDomains[parsed.scheme + "://" + parsed.netloc] += 1
 
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
@@ -65,13 +77,13 @@ def extract_next_links(url, resp):
 
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
-                    hyperlinks.add("https:" + href)
+                    hyperlinks.add(urldefrag("https:" + href)[0])
             elif(href[0] == '/'):
                 if is_valid("https://" + domain + href):
-                    hyperlinks.add("https://" + domain + href)
+                    hyperlinks.add(urldefrag("https://" + domain + href)[0])
             elif(href != "javascript:void(0)"):
                 if is_valid(href):
-                    hyperlinks.add(href)
+                    hyperlinks.add(urldefrag(href)[0])
             
             # previousPageTokens = currentPageTokens        # Backup
 
@@ -103,7 +115,8 @@ def is_valid(url):
                 return False
         except:
             pass
-        
+    
+          
         if re.match(check_netloc_pattern, parsed.netloc) == None:  # first check if no matches with first four websites
             if re.match(fifth_link_pattern_domain, parsed.netloc) != None:
                 # then the fifth link matched but we need to check if it has the correct beginning paths
@@ -126,4 +139,5 @@ def is_valid(url):
 
     except TypeError:
         return False    # if type error, we should not add it to frontier
+
 
