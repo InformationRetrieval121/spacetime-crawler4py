@@ -13,6 +13,7 @@ class Worker(Thread):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
         self.config = config
         self.frontier = frontier
+        self.allVisited = set()
         # basic check for requests in scraper
         assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests from scraper.py"
         super().__init__(daemon=True)
@@ -21,19 +22,26 @@ class Worker(Thread):
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
-                self.logger.info(f"Longest page in terms of # of words: {textContent.mostWordsURL}")    # this should work
+                self.logger.info(f"(1) Unique Pages found: {len(self.allVisited)}")
+                self.logger.info(f"(2) Longest page in terms of # of words: {textContent.mostWordsURL}")    # this should work
                 FiftyMostCommon = textContent.findTop50()
-                self.logger.info(f"50 most common words: {FiftyMostCommon}")
+                self.logger.info(f"(3) 50 most common words: {FiftyMostCommon}")
+                self.logger.info("(4) List of subdomains alphabetically and number of unique pages...")
+                for k,v in sorted(scraper.IcsUciEduDomains.items(), key=(lambda t : t[0])):
+                    self.logger.info(f"{k}, {v}")
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            if legal.checkLegality(tbd_url, self.config):   # if legal,
-                resp = download(tbd_url, self.config, self.logger)  # then download the web site
-                self.logger.info(
-                f"Downloaded {tbd_url}, status <{resp.status}>, "
-                f"using cache {self.config.cache_server}.")
-                if resp.status == 200:  # if not status 200, we can't access any reasonable information for the web site
-                    scraped_urls = scraper.scraper(tbd_url, resp)
-                    for scraped_url in scraped_urls:
-                        self.frontier.add_url(scraped_url)
+            if tbd_url not in self.allVisited:
+                self.allVisited.add(tbd_url)
+                if legal.checkLegality(tbd_url, self.config):	# if not visited before and legal...
+                    resp = download(tbd_url, self.config, self.logger)  # then download the web site
+                    self.logger.info(
+                    f"Downloaded {tbd_url}, status <{resp.status}>, "
+                    f"using cache {self.config.cache_server}.")
+                    if resp.status == 200:  # if not status 200, we can't access any reasonable information for the web site
+                        scraped_urls = scraper.scraper(tbd_url, resp)
+                        for scraped_url in scraped_urls:
+                            self.frontier.add_url(scraped_url)
+
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)

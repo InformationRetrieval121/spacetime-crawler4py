@@ -125,5 +125,5 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
     except TypeError:
-        pass
+        return False    # if type error, we should not add it to frontier
 

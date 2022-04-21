@@ -19,16 +19,16 @@ biggestIndexForStopWords = len(stopWords) - 1
 ultimateDictionary = defaultdict(int)   # this dictionary will be used to add all found words
                                         # across all found web sites
 def findTop50():
-  global ultimateDictionary
-  mostCommon = []
-  i = 0
-  for k,v in sorted(ultimateDictionary.items(), key=(lambda t : t[1])):
-  	if i >= 50:
-      break
-    else:
-      mostCommon.append(k)
-  	i += 1
-  return mostCommon
+    global ultimateDictionary
+    mostCommon = []
+    i = 0
+    for k,v in sorted(ultimateDictionary.items(), key=(lambda t : t[1])):
+        if i >= 50:
+            break
+        else:
+            mostCommon.append(k)
+        i += 1
+    return mostCommon
 
 def countTokens(resp):
     ''' Take in a response object and tokenize important
