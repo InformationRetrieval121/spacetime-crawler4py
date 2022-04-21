@@ -59,6 +59,8 @@ def countTokens(resp):
         mostWordsCount = count
         mostWordsURL = resp.url
         # print("mostWordsURL: " + str(mostWordsURL) + "     mostWordsCount: " + str(mostWordsCount))
+    if len(wordFreq) < 20:
+        return {}
     return wordFreq
 
 def binarySearch(word, small_index, big_index):
