@@ -10,6 +10,7 @@ nltk.download("punkt")
 # we can either keep this tokenizer or make our own
 # this one doesn't split contraction or hyphenated words
 
+
 mostWordsCount = 0
 mostWordsURL = ""
 
@@ -42,7 +43,7 @@ def countTokens(resp):
 
     global biggestIndexForStopWords
     global ultimateDictionary
-    
+
     if entireBodyTag is not None:
         for s in entireBodyTag.strings:     # gets every "sentence" in the web site (headers/body/etc)
             tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # tokenizes each sentence and gets rid of surrounding whitespace/newlines
@@ -59,7 +60,7 @@ def countTokens(resp):
         mostWordsCount = count
         mostWordsURL = resp.url
         # print("mostWordsURL: " + str(mostWordsURL) + "     mostWordsCount: " + str(mostWordsCount))
-    if len(wordFreq) < 20:
+    if len(wordFreq) < 20 or len(wordFreq) > 5000: # getting rid of low value page and large files
         return {}
     return wordFreq
 

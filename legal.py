@@ -53,10 +53,10 @@ def checkLegality(given_url, given_config):
                     return True # will return True since it found it was allowed
             return False  # means no exceptions were made in the disallowed path
         else:
-            return True # assume we can crawl if we can't access robots.txt file (not status 200)
+            return False # assume we canNOT crawl if we can't access robots.txt file (not status 200) for traps
             
     except:
-        return True     # assume we can crawl if download went wrong and something failed
+        return False     # assume we canNOT crawl if download went wrong and something failed (for intentional traps)
 
 '''
 User-agent: *

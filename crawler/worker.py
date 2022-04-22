@@ -7,13 +7,15 @@ import scraper
 import time
 import legal
 import textContent
+from collections import defaultdict
+from urllib.parse import urlparse
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
         self.config = config
         self.frontier = frontier
-        self.allVisited = set()
+        self.allVisited = defaultdict(int)
         # basic check for requests in scraper
         assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests from scraper.py"
         super().__init__(daemon=True)
@@ -22,7 +24,10 @@ class Worker(Thread):
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
-                self.logger.info(f"(1) Unique Pages found: {len(self.allVisited)}")
+                allUniques = 0
+                for value in self.allVisited.values():
+                    allUniques += value
+                self.logger.info(f"(1) Unique Pages found: {allUniques}")
                 self.logger.info(f"(2) Longest page in terms of # of words: {textContent.mostWordsURL}")    # this should work
                 FiftyMostCommon = textContent.findTop50()
                 self.logger.info(f"(3) 50 most common words: {FiftyMostCommon}")
@@ -31,8 +36,13 @@ class Worker(Thread):
                     self.logger.info(f"{k}, {v}")
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            if tbd_url not in self.allVisited:
-                self.allVisited.add(tbd_url)
+
+            parsed = urlparse(tbd_url)
+            checkConditionURL = tbd_url.replace(parsed.query, "")
+            checkConditionURL = tbd_url.replace(parsed.fragment, "")
+
+            if checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20:
+                self.allVisited[tbd_url] += 1
                 if legal.checkLegality(tbd_url, self.config):	# if not visited before and legal...
                     resp = download(tbd_url, self.config, self.logger)  # then download the web site
                     self.logger.info(
@@ -42,6 +52,8 @@ class Worker(Thread):
                         scraped_urls = scraper.scraper(tbd_url, resp)
                         for scraped_url in scraped_urls:
                             self.frontier.add_url(scraped_url)
+            else:
+                print(checkConditionURL, "executed too many times:", self.allVisited[checkConditionURL])
 
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
