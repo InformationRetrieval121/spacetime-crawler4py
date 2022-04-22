@@ -7,6 +7,8 @@ from utils.download import download
 def checkLegality(given_url, given_config):
     '''Takes a url, downloads the domain's robots.txt file,
     checks if allowed to crawl or not. Returns bool.'''
+    if len(given_url) > 200:
+        return False  # to catch traps that repetitively append a  path to the url
     parsedResult = urlparse(given_url)  # split up the url into its parts
     
     urlCheckingFor = given_url

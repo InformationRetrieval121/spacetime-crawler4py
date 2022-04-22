@@ -29,7 +29,7 @@ class Worker(Thread):
                 for value in self.allVisited.values():
                     allUniques += value
                 self.logger.info(f"(1) Unique Pages found: {allUniques}")
-                self.logger.info(f"(2) Longest page in terms of # of words: {textContent.mostWordsURL}")    # this should work
+                self.logger.info(f"(2) Longest page in terms of # of words: {textContent.mostWordsURL} with {textContent.mostWordsCount} words.")    # this should work
                 FiftyMostCommon = textContent.findTop50()
                 self.logger.info(f"(3) 50 most common words: {FiftyMostCommon}")
                 self.logger.info("(4) List of subdomains alphabetically and number of unique pages...")
@@ -43,23 +43,27 @@ class Worker(Thread):
             checkConditionURL = tbd_url.replace(parsed.query, "")
             checkConditionURL = tbd_url.replace(parsed.fragment, "")'''
             
-            checkConditionURL = tbd_url.replace(parsed.query, "")
-            checkConditionURL = checkConditionURL.replace(parsed.fragment, "")
-
-            if checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20:
+            checkConditionURL = tbd_url.replace("?" + parsed.query, "")
+            checkConditionURL = checkConditionURL.replace("#" + parsed.fragment, "")
+            BannedFlag = False
+            for bannedLink in self.bannedURLS:
+                if checkConditionURL[:len(bannedLink)] == bannedLink:
+                    BannedFlag = True
+            
+            if (not BannedFlag) and (checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20):
                 self.allVisited[checkConditionURL] += 1
-                if self.allVisited[checkConditionURL] == 1:
-                    mostOfURL = checkConditionURL.rfind("/") #www.brian.com/events/2000-11-22, index for last slash
-                    mainpartOfURL = checkConditionURL[:mostOfURL] #www.brian.com/events
-                    repeats_num = 0
-                    for key in self.allVisited.keys():
-                        if key[:mostOfURL] == mainpartOfURL:
-                            repeats_num += 1
-                            
-                    if repeats_num > 20:
-                        self.bannedURLS.append(mainpartOfURL)
+                if self.allVisited[checkConditionURL] == 1:  # "unique path" for traps
+                    if parsed.path != "":
+                        mostOfURL = checkConditionURL.rfind("/") # www.brian.com/events/2000-11-22, index for last slash
+                        mainpartOfURL = checkConditionURL[:mostOfURL] # www.brian.com/events
+                        repeats_num = 0
+                        for key in self.allVisited.keys():
+                            if key[:mostOfURL] == mainpartOfURL:
+                                repeats_num += 1
+                                if repeats_num > 150:
+                                    self.bannedURLS.append(mainpartOfURL)
+                                    break
 
-                
                 if legal.checkLegality(tbd_url, self.config):	# if not visited before and legal...
                     resp = download(tbd_url, self.config, self.logger)  # then download the web site
                     self.logger.info(
@@ -69,6 +73,8 @@ class Worker(Thread):
                         scraped_urls = scraper.scraper(tbd_url, resp)
                         for scraped_url in scraped_urls:
                             self.frontier.add_url(scraped_url)
+            else:
+                print(checkConditionURL, "IS A TRAP???")
 
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)

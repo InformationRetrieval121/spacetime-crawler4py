@@ -39,7 +39,7 @@ def check_IcsUciEdu(url):
     global IcsUciEduDomains
     if re.match(check_ics_uci_edu_domain, parsed.netloc) != None:
         if parsed.netloc != "www.ics.uci.edu" and parsed.netloc != "ics.uci.edu":
-            IcsUciEduDomains[parsed.scheme + "://" + parsed.netloc] += 1
+            IcsUciEduDomains[parsed.netloc] += 1
 
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
@@ -148,6 +148,3 @@ def is_valid(url):
 
     except TypeError:
         return False    # if type error, we should not add it to frontier
-
-
-

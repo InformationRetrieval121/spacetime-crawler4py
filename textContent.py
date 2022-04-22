@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from collections import defaultdict
 import math
 import nltk
+import re
 nltk.download("punkt")
 # pip install nltk
 # also need to credit the authors
@@ -23,7 +24,7 @@ def findTop50():
     global ultimateDictionary
     mostCommon = []
     i = 0
-    for k,v in sorted(ultimateDictionary.items(), key=(lambda t : t[1])):
+    for k,v in sorted(ultimateDictionary.items(), key=(lambda t : -t[1])):
         if i >= 50:
             break
         else:
@@ -40,18 +41,22 @@ def countTokens(resp):
     soup = BeautifulSoup(resp.raw_response.content, 'html.parser', from_encoding="utf-8")
     entireBodyTag = soup.body
     count = 0   # local total number of words found in this web site
-
+    alphaNumericPattern = r'^[a-zA-Z0-9]$'
     global biggestIndexForStopWords
     global ultimateDictionary
-
     if entireBodyTag is not None:
         for s in entireBodyTag.strings:     # gets every "sentence" in the web site (headers/body/etc)
             tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # tokenizes each sentence and gets rid of surrounding whitespace/newlines
             for element in tokenizedList:   # looping through each actual token/word
                 count += 1
                 if not (binarySearch(element, 0, biggestIndexForStopWords)):
-                    wordFreq[element] += 1
-                    ultimateDictionary[element] += 1
+                    if len(element) == 1 and re.match(alphaNumericPattern, element) != None:
+                        wordFreq[element] += 1
+                        ultimateDictionary[element] += 1
+                    elif len(element) > 1:
+                        wordFreq[element] += 1
+                        ultimateDictionary[element] += 1
+                  
 
     global mostWordsCount
     global mostWordsURL
@@ -59,8 +64,7 @@ def countTokens(resp):
     if count > mostWordsCount:
         mostWordsCount = count
         mostWordsURL = resp.url
-        # print("mostWordsURL: " + str(mostWordsURL) + "     mostWordsCount: " + str(mostWordsCount))
-    if len(wordFreq) < 20 or len(wordFreq) > 5000: # getting rid of low value page and large files
+    if len(wordFreq) < 20 or len(wordFreq) > 5500: # getting rid of low value page and large files
         return {}
     return wordFreq
 
@@ -93,4 +97,3 @@ def fingerprint(hyperlinks)
             element = hashlib.sha1(element) #make each element a hash value (hash with checksum instead)
 
 """
-
