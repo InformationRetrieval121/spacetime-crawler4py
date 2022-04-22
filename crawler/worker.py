@@ -16,6 +16,7 @@ class Worker(Thread):
         self.config = config
         self.frontier = frontier
         self.allVisited = defaultdict(int)
+        self.bannedURLS = []
         # basic check for requests in scraper
         assert {getsource(scraper).find(req) for req in {"from requests import", "import requests"}} == {-1}, "Do not use requests from scraper.py"
         super().__init__(daemon=True)
@@ -38,11 +39,27 @@ class Worker(Thread):
                 break
 
             parsed = urlparse(tbd_url)
+            '''
             checkConditionURL = tbd_url.replace(parsed.query, "")
-            checkConditionURL = tbd_url.replace(parsed.fragment, "")
+            checkConditionURL = tbd_url.replace(parsed.fragment, "")'''
+            
+            checkConditionURL = tbd_url.replace(parsed.query, "")
+            checkConditionURL = checkConditionURL.replace(parsed.fragment, "")
 
             if checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20:
-                self.allVisited[tbd_url] += 1
+                self.allVisited[checkConditionURL] += 1
+                 if self.allVisited[] == 1:
+                    mostOfURL = checkConditionURL.rfind("/") #www.brian.com/events/2000-11-22, index for last slash
+                    mainpartOfURL = checkConditionURL[:mostOfURL] #www.brian.com/events
+                    repeats_num = 0
+                    for key in self.allVisited.keys:
+                        if key[:mostOfURL] == mainpartOfURL:
+                            repeats_num += 1
+                            
+                    if repeats_num > 20:
+                        self.bannedURLS.append(mainpartOfURL)
+
+                
                 if legal.checkLegality(tbd_url, self.config):	# if not visited before and legal...
                     resp = download(tbd_url, self.config, self.logger)  # then download the web site
                     self.logger.info(
