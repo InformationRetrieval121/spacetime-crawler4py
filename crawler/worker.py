@@ -48,11 +48,11 @@ class Worker(Thread):
 
             if checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20:
                 self.allVisited[checkConditionURL] += 1
-                 if self.allVisited[] == 1:
+                if self.allVisited[checkConditionURL] == 1:
                     mostOfURL = checkConditionURL.rfind("/") #www.brian.com/events/2000-11-22, index for last slash
                     mainpartOfURL = checkConditionURL[:mostOfURL] #www.brian.com/events
                     repeats_num = 0
-                    for key in self.allVisited.keys:
+                    for key in self.allVisited.keys():
                         if key[:mostOfURL] == mainpartOfURL:
                             repeats_num += 1
                             
@@ -69,8 +69,6 @@ class Worker(Thread):
                         scraped_urls = scraper.scraper(tbd_url, resp)
                         for scraped_url in scraped_urls:
                             self.frontier.add_url(scraped_url)
-            else:
-                print(checkConditionURL, "executed too many times:", self.allVisited[checkConditionURL])
 
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
