@@ -39,28 +39,29 @@ class Worker(Thread):
                 break
 
             parsed = urlparse(tbd_url)
-            '''
-            checkConditionURL = tbd_url.replace(parsed.query, "")
-            checkConditionURL = tbd_url.replace(parsed.fragment, "")'''
+
             
             checkConditionURL = tbd_url.replace("?" + parsed.query, "")
             checkConditionURL = checkConditionURL.replace("#" + parsed.fragment, "")
+            if checkConditionURL[-1] == "/":
+                checkConditionURL = checkConditionURL[:len(checkConditionURL)-1]
+                
             BannedFlag = False
             for bannedLink in self.bannedURLS:
                 if checkConditionURL[:len(bannedLink)] == bannedLink:
                     BannedFlag = True
             
-            if (not BannedFlag) and (checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 20):
+            if (not BannedFlag) and (checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 150):
                 self.allVisited[checkConditionURL] += 1
-                if self.allVisited[checkConditionURL] == 1:  # "unique path" for traps
-                    if parsed.path != "":
-                        mostOfURL = checkConditionURL.rfind("/") # www.brian.com/events/2000-11-22, index for last slash
-                        mainpartOfURL = checkConditionURL[:mostOfURL] # www.brian.com/events
+                if self.allVisited[checkConditionURL] == 1:  # "unique path" for traps that generate dates i.e. /1-2022/ or /2-2022/ and so on
+                    if parsed.path != "":                            
+                        mostOfURL = checkConditionURL.rfind("/") # https://www.brian.com/events/2000-11-22, index for last slash
+                        mainpartOfURL = checkConditionURL[:mostOfURL] # https://www.brian.com/events
                         repeats_num = 0
                         for key in self.allVisited.keys():
-                            if key[:mostOfURL] == mainpartOfURL:
+                            if key[:mostOfURL].count("/") > 2 and key[:mostOfURL] == mainpartOfURL:
                                 repeats_num += 1
-                                if repeats_num > 150:
+                                if repeats_num > 400:
                                     self.bannedURLS.append(mainpartOfURL)
                                     break
 
@@ -73,8 +74,5 @@ class Worker(Thread):
                         scraped_urls = scraper.scraper(tbd_url, resp)
                         for scraped_url in scraped_urls:
                             self.frontier.add_url(scraped_url)
-            else:
-                print(checkConditionURL, "IS A TRAP???")
-
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)

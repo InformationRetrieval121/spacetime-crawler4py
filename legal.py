@@ -12,7 +12,7 @@ def checkLegality(given_url, given_config):
     parsedResult = urlparse(given_url)  # split up the url into its parts
     
     urlCheckingFor = given_url
-    if parsedResult.query == "" and parsedResult.fragment == "" and parsedResult.path != "":    # these three lines of code "fixes" any url's
+    if parsedResult.query == "" and parsedResult.fragment == "" and parsedResult.path != "" and parsedResult.path[-1] != "/":    # these three lines of code "fixes" any url's
         urlCheckingFor += "/"                                                                   # with paths that don't have a "/" at the end
         
     urlWithRobot = parsedResult.scheme + "://" + parsedResult.netloc + "/robots.txt"    # url of robots.txt

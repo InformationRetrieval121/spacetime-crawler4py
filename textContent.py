@@ -48,24 +48,39 @@ def countTokens(resp):
         for s in entireBodyTag.strings:     # gets every "sentence" in the web site (headers/body/etc)
             tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # tokenizes each sentence and gets rid of surrounding whitespace/newlines
             for element in tokenizedList:   # looping through each actual token/word
-                count += 1
-                if not (binarySearch(element, 0, biggestIndexForStopWords)):
-                    if len(element) == 1 and re.match(alphaNumericPattern, element) != None:
-                        wordFreq[element] += 1
-                        ultimateDictionary[element] += 1
-                    elif len(element) > 1:
-                        wordFreq[element] += 1
-                        ultimateDictionary[element] += 1
+                if len(element) == 1 and re.match(alphaNumericPattern, element) != None:
+                    # means that it is an actual single letter "word" and not a special symbol
+                    count += 1
+                    if not (binarySearch(element, 0, biggestIndexForStopWords)):
+                    # enters if it is a single alphanumeric character (not special symbols) that is not a stop word
+                        try:
+                            wordFreq[element.lower()] += 1
+                            ultimateDictionary[element.lower()] += 1
+                        except:
+                            wordFreq[element] += 1
+                            ultimateDictionary[element] += 1
+                elif len(element) > 1:
+                    count += 1
+                    if not (binarySearch(element, 0, biggestIndexForStopWords)):
+                    # enters if it is a word that is bigger than just one character and also not a stop word
+                        try:
+                            wordFreq[element.lower()] += 1
+                            ultimateDictionary[element.lower()] += 1
+                        except:
+                            wordFreq[element] += 1
+                            ultimateDictionary[element] += 1
                   
 
     global mostWordsCount
     global mostWordsURL
-                
+            
+    if len(wordFreq) < 20 or len(wordFreq) > 10000: # getting rid of low value page and large files in terms of "keys"
+        return {}
+    
     if count > mostWordsCount:
         mostWordsCount = count
         mostWordsURL = resp.url
-    if len(wordFreq) < 20 or len(wordFreq) > 5500: # getting rid of low value page and large files
-        return {}
+
     return wordFreq
 
 def binarySearch(word, small_index, big_index):
