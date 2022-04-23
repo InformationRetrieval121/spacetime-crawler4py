@@ -12,34 +12,33 @@ import json
 # 2) spacetime (look at ed discussion if having difficulty)
 # 3) nltk (as of now unless we use a different tokenizer)
 
-# previousPageTokens = set()        # Backup
 IcsUciEduDomains = defaultdict(int)
 
 
 def scraper(url, resp):
-    # line below will be for indexing the actual words (e.g. index(url))
-    dictionaryForWebSite = textContent.countTokens(resp)    # STILL NEED TO WRITE TO A FILE ALL DICTIONARIES
-    if len(dictionaryForWebSite) != 0:
-        writeToFile(dictionaryForWebSite, url)
-    # line above is commented out for now but should we store each dictionary to
-    # its corresponding link? What do you guys think?
+    dictionaryForWebSite = textContent.countTokens(resp) #dictionary with frequency of each word
+    if len(dictionaryForWebSite) != 0: #checks if website isnt empty
+        writeToFile(dictionaryForWebSite, url) #write to a file to prevent excessive usage of memory
     check_IcsUciEdu(url)
     return extract_next_links(url, resp)
 
-def writeToFile(dictionary, url):
+def writeToFile(dictionary, url): #writes the tokens and their frequeny to a file
     with open('URLtokens.txt', 'a') as index_file:
             index_file.write(url)
             index_file.write("\n")
             index_file.write(json.dumps(dictionary))
             index_file.write("\n")
 
-def check_IcsUciEdu(url):
-    check_ics_uci_edu_domain = r'^(www\.)?(.*\.)(ics\.uci\.edu)$' # for problem# 4 
+def check_IcsUciEdu(url): #checks if it is a subdomain in the ics.uci.edu domain using a regex pattern(problem 4)
+    check_ics_uci_edu_domain = r'^(www\.)?(.*\.)(ics\.uci\.edu)$'
     parsed = urlparse(url)
     global IcsUciEduDomains
+    #add it to the dictionary of subdomains if it does containt the correct domain
+    #and also prevents the original domain from being added'''
     if re.match(check_ics_uci_edu_domain, parsed.netloc) != None:
         if parsed.netloc != "www.ics.uci.edu" and parsed.netloc != "ics.uci.edu":
             IcsUciEduDomains[parsed.netloc] += 1
+
 
 def extract_next_links(url, resp):
     ''' Everything in this paragraph is what was given in the template...
@@ -65,25 +64,16 @@ def extract_next_links(url, resp):
     cannot_contain_keywords = ["format=txt"]
 
     noFollowLinks = soup.find_all('a', rel="nofollow")
-    # global previousPageTokens         # Backup
+    
 
     # Goes through the href's found and formats them in full url form to be put
     # in a set(which later is turned into a list)
     # Makes the assumption that implicit href's uses "https://"
-    # print(resp.raw_response.url)
     for content in found_links_content:
-        href = content['href']
-        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords): 
+        href = content['href'] #href is just the entire URL 
+        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords):
             
-
-            # Horribly inefficient method of checking for similarity
-            # currentPageTokens = set(textContent.countTokens(resp).keys())
-            '''
-            if previousPageToken:
-                similarity = len(previousPageToken.intersection(currentPageTokens)) / len(previousPageTokens.union(currentPageTokens))
-                if(similarity > 0.9): continue      #  <-- Can change similarity threshold based on group decision
-            '''
-
+            #check all links if they are valid before adding it to the set
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add(urldefrag("https:" + href)[0])
@@ -93,8 +83,6 @@ def extract_next_links(url, resp):
             elif(href != "javascript:void(0)"):
                 if is_valid(href):
                     hyperlinks.add(urldefrag(href)[0])
-            
-            # previousPageTokens = currentPageTokens        # Backup
 
     return list(hyperlinks)
 
