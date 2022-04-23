@@ -38,16 +38,20 @@ def countTokens(resp):
     words found with frequency.'''
 
     wordFreq = defaultdict(int)     # current dictionary of words for this web site
+    count = 0   # local total number of words found in this web site
+    
     soup = BeautifulSoup(resp.raw_response.content, 'html.parser', from_encoding="utf-8")
     entireBodyTag = soup.body
-    count = 0   # local total number of words found in this web site
+    
     alphaNumericPattern = r'^[a-zA-Z0-9]$'
+
     global biggestIndexForStopWords
     global ultimateDictionary
+    
     if entireBodyTag is not None:
         for s in entireBodyTag.strings:     # gets every "sentence" in the web site (headers/body/etc)
-            tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # tokenizes each sentence and gets rid of surrounding whitespace/newlines
-            for element in tokenizedList:   # looping through each actual token/word
+            tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # gets rid of surrounding whitespace/newlines and tokenizes sentence into a list
+            for element in tokenizedList:   # looping through each actual token
                 if len(element) == 1 and re.match(alphaNumericPattern, element) != None:
                     # means that it is an actual single letter "word" and not a special symbol
                     count += 1
@@ -74,10 +78,10 @@ def countTokens(resp):
     global mostWordsCount
     global mostWordsURL
             
-    if len(wordFreq) < 20 or len(wordFreq) > 10000: # getting rid of low value page and large files in terms of "keys"
-        return {}
+    if len(wordFreq) < 30 or len(wordFreq) > 10000: # getting rid of low value page with under 30 different words in the entire web siteand large files in terms of "keys"
+        return {}                                   # getting rid of files which may contain so much information to the point that the information is not reliable (more than 10,000 different words)
     
-    if count > mostWordsCount: #keeps track of the biggest URL, overriding the old one when we find one bigger 
+    if count > mostWordsCount: # keeps track of the biggest URL, updating the old "biggest one" when we find one even bigger 
         mostWordsCount = count
         mostWordsURL = resp.url
 

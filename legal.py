@@ -26,18 +26,18 @@ def checkLegality(given_url, given_config):
         resp = download(urlWithRobot, given_config) # download the robots.txt file from cache
         if resp.status == 200:      # only continue if we were able to download the robots.txt file correctly
             allLines = resp.raw_response.content.decode("utf-8").split('\n')    # all lines of robots.txt stored into a list
-            appliesToOurBot = False # an indicator of whether we the "laws" apply to our bot
+            appliesToOurBot = False # an indicator of whether the "laws" apply to our bot (User agent must be *)
             disallowedPaths = []    # stores paths disallowed applicable to our bot
             allowedPaths = []       # stores paths allowed (after being disallowed) applicable to our bot
             for lineToRead in allLines: # reads the all lines of robots.txt
-                if len(lineToRead) != 0:
+                if len(lineToRead) != 0:    # skip over a line if it has no characters
                     splitLine = lineToRead.split()
                     if splitLine[0] == 'User-agent:' and len(splitLine) > 1:    # check if list has 2 or more elements so splitLine[1] doesn't raise an error
                         if splitLine[1] == '*':
                             appliesToOurBot = True
                         else:
                             appliesToOurBot = False
-                    elif appliesToOurBot:
+                    elif appliesToOurBot:   
                         if splitLine[0] == 'Disallow:':
                             if splitLine[1] == "/":
                                 return False    # this means our bot isn't allowed to crawl anything so return false
@@ -48,23 +48,25 @@ def checkLegality(given_url, given_config):
 
             isLegal = True  # an indicator to see if we have to check the "allowed" list
 
-            lenOfLongestDP = 0      # look at comment below for why we need to find the "biggest" disallowed path
+            lenOfLongestDP = 0 # length of biggest disallowed url that applies to the "urlCheckingFor" (see bottom of file to see example of why we must find biggest disallowed)
             for disallowedPath in disallowedPaths:
                 lenOfCurrentDP = len(disallowedPath)
-                if (disallowedPath == urlCheckingFor[:lenOfCurrentDP]) and lenOfCurrentDP > lenOfLongestDP:   # look at "Can this exist?" comment
+                if (disallowedPath == urlCheckingFor[:lenOfCurrentDP]) and lenOfCurrentDP > lenOfLongestDP: # only disallow if it matches and bigger than previous biggest disalllowed url
                     lenOfLongestDP = lenOfCurrentDP
                     isLegal = False     # as of right now, our url is disallowed                                
+
             if isLegal:     # if no disallowed paths matched ours, immediately... 
                 return True 
+
             for allowedPath in allowedPaths:
-                if allowedPath == urlCheckingFor[:len(allowedPath)] and len(allowedPath) > lenOfLongestDP:# make sure it is BIGGER than the biggest disallowed path found
-                    return True # will return True since it found it was allowed
-            return False  # means no exceptions were made in the disallowed path
+                if allowedPath == urlCheckingFor[:len(allowedPath)] and len(allowedPath) > lenOfLongestDP:  # make sure it is BIGGER than the biggest disallowed path found
+                    return True
+            return False  # means no "allow" statements overrided the disallowed path
         else:
-            return False # assume we canNOT crawl if we can't access robots.txt file (not status 200) for traps
+            return False # this executes when access robots.txt file (not status 200) for traps
             
     except:
-        return False     # assume we canNOT crawl if download went wrong and something failed (for intentional traps)
+        return False     # this executes if download went wrong and something failed (for intentional traps) that perhaps don't provide a robots.txt file
 
 '''
 User-agent: *
