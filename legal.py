@@ -1,19 +1,25 @@
 # legal.py
-from urllib.parse import urlparse
-from utils.download import download
 
 # parsed has attributes: scheme, netloc, path, params, query, fragment
+# used to break up url's by parts
+from urllib.parse import urlparse
+
+#used to download robots.txt file of the web sites
+from utils.download import download
+
     
 def checkLegality(given_url, given_config):
     '''Takes a url, downloads the domain's robots.txt file,
     checks if allowed to crawl or not. Returns bool.'''
-    if len(given_url) > 200:
-        return False  # to catch traps that repetitively append a  path to the url
+    if len(given_url) > 200:    # don't visit any url's with length greater than 200 since some 
+        return False            # traps repetitively append a  path to the url
+
     parsedResult = urlparse(given_url)  # split up the url into its parts
     
     urlCheckingFor = given_url
-    if parsedResult.query == "" and parsedResult.fragment == "" and parsedResult.path != "" and parsedResult.path[-1] != "/":    # these three lines of code "fixes" any url's
-        urlCheckingFor += "/"                                                                   # with paths that don't have a "/" at the end
+    # assures 1) query is empty, 2) fragment is empty, 3) path is not empty, 4) last character is not a slash
+    if parsedResult.query == "" and parsedResult.fragment == "" and parsedResult.path != "" and parsedResult.path[-1] != "/":
+        urlCheckingFor += "/"    # add a slash to the end of the url if it is not there
         
     urlWithRobot = parsedResult.scheme + "://" + parsedResult.netloc + "/robots.txt"    # url of robots.txt
     try:
