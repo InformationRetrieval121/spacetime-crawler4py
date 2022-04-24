@@ -58,7 +58,7 @@ def extract_next_links(url, resp):
 
     # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
     soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-    found_links_content = soup.find_all('a', href=True)``
+    found_links_content = soup.find_all('a', href=True)
     hyperlinks = set()
     domain = urlparse(url).netloc
     
@@ -74,7 +74,7 @@ def extract_next_links(url, resp):
     # Makes the assumption that implicit href's uses "https://"
     for content in found_links_content:
         href = content['href'] #href is just the entire URL 
-        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords) and not in noFollowLinks:
+        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords) and href not in noFollowLinks:
             
             # check all links if they are valid before adding it to the set
             if(len(href) > 1 and href[:2] == "//"):
