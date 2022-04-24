@@ -58,24 +58,25 @@ def extract_next_links(url, resp):
 
     # Makes a BeautifulSoup that finds all hyperlinks within that resp.content
     soup = BeautifulSoup(resp.raw_response.content, 'lxml')
-    found_links_content = soup.find_all('a', href=True)
+    found_links_content = soup.find_all('a', href=True)``
     hyperlinks = set()
     domain = urlparse(url).netloc
     
     # Skipping pages that are just .txt formats of a similar page
     cannot_contain_keywords = ["format=txt"]
 
+    # Don't add hyperlinks that have 'nofollow' tag
     noFollowLinks = soup.find_all('a', rel="nofollow")
-    
+    noFollowLinks = list(noFollowLinks)
 
     # Goes through the href's found and formats them in full url form to be added
     # to a set(which later is turned into a list)
     # Makes the assumption that implicit href's uses "https://"
     for content in found_links_content:
         href = content['href'] #href is just the entire URL 
-        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords):
+        if len(href) != 0 and href[0] != "#" and not any(keyword in href for keyword in cannot_contain_keywords) and not in noFollowLinks:
             
-            #check all links if they are valid before adding it to the set
+            # check all links if they are valid before adding it to the set
             if(len(href) > 1 and href[:2] == "//"):
                 if is_valid("https:" + href):
                     hyperlinks.add(urldefrag("https:" + href)[0])
@@ -111,9 +112,9 @@ def is_valid(url):
 
         #quick check to make sure doesnt access a file
         try:
-            if parsed.path[1] == "~":
+            if "~" in parsed.path:
                 return False
-            if parsed.path[1:4] == "files":
+            if "files" in parsed.path:
                 return False
         except:
             pass

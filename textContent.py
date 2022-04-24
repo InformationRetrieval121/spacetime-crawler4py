@@ -7,7 +7,6 @@ import nltk
 import re
 nltk.download("punkt")
 # pip install nltk
-# also need to credit the authors
 
 mostWordsCount = 0
 mostWordsURL = ""
