@@ -11,7 +11,7 @@ from utils.download import download
 def checkLegality(given_url, given_config):
     '''Takes a url, downloads the domain's robots.txt file,
     checks if allowed to crawl or not. Returns bool.'''
-    if len(given_url) > 200:    # don't visit any url's with length greater than 200 since some 
+    if len(given_url) > 180:    # don't visit any url's with length greater than 180 since some 
         return False            # traps repetitively append a  path to the url
 
     parsedResult = urlparse(given_url)  # split up the url into its parts

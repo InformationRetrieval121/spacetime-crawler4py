@@ -57,7 +57,7 @@ class Worker(Thread):
                     
             # increments amount of times that URL has been visited (checking for traps) and also bans the trap URLs
             # preventing the download of trap URLs as this check is done before actually downloading the URLs
-            if (not BannedFlag) and (checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 150):
+            if (not BannedFlag) and (checkConditionURL not in self.allVisited or self.allVisited[checkConditionURL] < 25):  # 25 is the threshold for the amount of different queries a certain url can have before we block it
                 self.allVisited[checkConditionURL] += 1
                 if self.allVisited[checkConditionURL] == 1:  # if == 1, may be a "unique path" for traps that generate dates by changing end of path i.e. /1-2022/ or /2-2022/ and so on
                     if parsed.path != "":                            
@@ -67,7 +67,7 @@ class Worker(Thread):
                         for key in self.allVisited.keys():
                             if key[:mostOfURL].count("/") > 2 and key[:mostOfURL] == mainpartOfURL: # possibly ban a url IF it is not a domain (hence the most have 3 or more slashes in the url (shouldn't ban https://ics.uci.edu)
                                 repeats_num += 1
-                                if repeats_num > 400: # The amount 400 is our threshold to decide we are in a trap (calendar traps being an example)
+                                if repeats_num > 145: # The amount 145 is our threshold to decide we are in a trap relating to changing end of path names (calendar traps being an example)
                                     self.bannedURLS.append(mainpartOfURL)
                                     break # important because it saves us time from always iterating through all of the keys 
 
