@@ -51,27 +51,28 @@ def countTokens(resp):
         for s in entireBodyTag.strings:     # gets every "sentence" in the web site (headers/body/etc)
             tokenizedList = nltk.tokenize.word_tokenize(s.strip())  # gets rid of surrounding whitespace/newlines and tokenizes sentence into a list
             for element in tokenizedList:   # looping through each actual token
+                try:
+                    element = element.lower()   # normalize the word to all lower case
+                except:
+                    pass
+                
                 if len(element) == 1 and re.match(alphaNumericPattern, element) != None:
                     # means that it is an actual single letter "word" and not a special symbol
                     count += 1
                     if not (binarySearch(element, 0, biggestIndexForStopWords)):
                     # enters if it is a single alphanumeric character (not special symbols) that is not a stop word
-                        try:
-                            wordFreq[element.lower()] += 1
-                            ultimateDictionary[element.lower()] += 1
-                        except:
-                            wordFreq[element] += 1
-                            ultimateDictionary[element] += 1
+                        wordFreq[element] += 1  # keep even one letter "words" in indexing dictionary though
+                        # ultimateDictionary[element] += 1  # don't add to dictionary of top 50 since only doing non stop words and len must be >= 3
                 elif len(element) > 1:
                     count += 1
                     if not (binarySearch(element, 0, biggestIndexForStopWords)):
                     # enters if it is a word that is bigger than just one character and also not a stop word
-                        try:
-                            wordFreq[element.lower()] += 1
-                            ultimateDictionary[element.lower()] += 1
-                        except:
-                            wordFreq[element] += 1
-                            ultimateDictionary[element] += 1
+                        wordFreq[element] += 1
+                        if len(element) >= 3:   # only adding len >= 3 words that aren't stopwords
+                            try:
+                                throwawayNumber = float(element)    # if element is a number, don't add it to dictionary
+                            except ValueError:                      # ValueError only is thrown if it is not a number since calling float("word") isn't possible
+                                ultimateDictionary[element] += 1
                   
 
     global mostWordsCount

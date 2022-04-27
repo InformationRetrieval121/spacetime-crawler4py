@@ -67,8 +67,9 @@ class Worker(Thread):
                         for key in self.allVisited.keys():
                             if key[:mostOfURL].count("/") > 2 and key[:mostOfURL] == mainpartOfURL: # possibly ban a url IF it is not a domain (hence the most have 3 or more slashes in the url (shouldn't ban https://ics.uci.edu)
                                 repeats_num += 1
-                                if repeats_num > 145: # The amount 145 is our threshold to decide we are in a trap relating to changing end of path names (calendar traps being an example)
+                                if repeats_num > 70: # The amount 70 is our threshold to decide we are in a trap relating to changing end of path names (calendar traps being an example)
                                     self.bannedURLS.append(mainpartOfURL)
+                                    
                                     break # important because it saves us time from always iterating through all of the keys 
 
                 if legal.checkLegality(tbd_url, self.config):	        # if legal...
